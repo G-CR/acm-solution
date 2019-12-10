@@ -1,6 +1,6 @@
 题目链接：https://vjudge.net/contest/347789#problem/D
 
-[![题面](https://github.com/G-CR/acm-solution/raw/master/D%20-%20Ice%20Cream%20Tower.jpg)](https://github.com/G-CR/acm-solution/blob/master/D - Ice Cream Tower.jpg)
+
 
 ​		题意：一个人很喜欢吃冰淇凌，他想要把N个冰淇凌球堆成高为K的冰淇凌球塔，但是为了稳定，下面的冰淇凌球的尺寸要大于等于它紧挨着的上面的冰淇凌球的两倍。然后要求这N个冰淇凌球最多可以组成多少个高为K的冰淇凌球塔。
 
