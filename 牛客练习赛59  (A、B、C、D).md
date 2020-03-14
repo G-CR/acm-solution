@@ -1,4 +1,4 @@
-[比赛链接](https://ac.nowcoder.com/acm/contest/4743#question)
+[题目链接](https://ac.nowcoder.com/acm/contest/4743#question)
 
 **A - 小乔和小灰灰**
 
@@ -72,6 +72,56 @@ int main() {
 ```
 
 
+
+**C - 装备合成**
+
+题意：一个装备需要a、b两种材料合成，2个a 3个b 或者 4个a 1个b 都可以，求给定a和b的个数时最多可以合成多少装备。
+
+思路：[参考这个大佬](https://blog.csdn.net/qq_43756519/article/details/104853746)，贪心做法。
+
+如果 **x : y >= 4 : 1**，那么全部使用第二种方案
+
+如果 **x : y <= 2 : 3**，那么全部使用第一种方案
+
+介于之间的就优先使用 2 : 3 的方案直到 x : y = 4 : 1，那么就需要计算需要多少次 2:3的操作就有：
+
+## 				$\frac{x-2n}{y-3n} = 4$
+
+变形一下：
+
+## 				$n = \frac{4y-x}{10}$
+
+n的值或许会取小数，又可能是第一种方法多一个，也有可能第二种方法多一个，此时四舍五入一下就可以得到：
+
+## 				$n = \frac{4y-x+5}{10}$
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+long long x, y;
+
+int main() {
+	scanf("%d", &_);
+	while(_--) {
+		scanf("%lld %lld", &x, &y);
+		if(y*4 < x) {
+			printf("%lld\n", y);
+		}
+		else if((double)x/(double)y <= (double)2/(double)3) {
+			printf("%lld\n", x/2);
+		}
+		else {
+			long long n = (4*y-x+5)/10;
+//			cout << "n = " << n << endl;
+			x -= 2*n;
+			y -= 3*n;
+			printf("%lld\n", n + min(x/4, y));
+		}
+	}
+}
+```
 
 
 
