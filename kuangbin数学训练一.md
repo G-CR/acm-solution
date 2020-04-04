@@ -175,3 +175,38 @@ int main() {
 }
 ```
 
+
+
+## Ekka Dokka
+
+##### [LightOJ - 1116](https://vjudge.net/problem/LightOJ-1116/origin)
+
+题意：给一个数W，需要输出一个N，一个M；N为奇数，M为偶数。并且 $W = N * M$ 。并且M需要最小。
+
+思路：如果W给的是奇数，那么没有答案，奇数和偶数的乘积一定为偶数；如果给的是偶数，如果没有最后一个约束条件直接输出 1 W 就完事了，那么也就是把W中的偶数都抽出来就好了，循环除以2，抽出来的是M，剩下的是N就👌。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+long long w;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lld", &w);
+		printf("Case %d: ", ++cas);
+		if(w % 2) puts("Impossible");
+		else {
+			long long t = w;
+			while(w % 2 == 0) {
+				w /= 2;
+			}
+			printf("%lld %lld\n", w, t/w);
+		}
+	}
+}
+```
+
