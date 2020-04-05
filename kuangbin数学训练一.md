@@ -382,3 +382,35 @@ int main() {
 }
 ```
 
+
+
+## Unlucky Bird
+
+[LightOJ - 1311](https://vjudge.net/problem/LightOJ-1311/origin)
+
+题意：一只鸟在两辆相向而行的火车之间之间飞行，左边的火车速度v1，右边的火车速度v2，🐦的速度为v3，这只鸟在这两辆车之间飞行，遇到左边的火车时调头向右，遇到右边的火车调头向左，这样往复，当这两辆火车距离为d时开始减速，左边的减速度问a1，右边的减速度为a2，🐦依然往复飞行，当火车距离刚好为0的时候两辆车的速度都是0。求d，和距离为d之后🐦的飞行路程。
+
+思路：物理题，注意一点就行了，两辆火车不一定在同一时刻停车。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+double v1, v2, v3, a1, a2;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lf %lf %lf %lf %lf", &v1, &v2, &v3, &a1, &a2);
+		double x1 = (v1*v1)/(2*a1);
+		double x2 = (v2*v2)/(2*a2);
+		double d = x1+x2; 
+		double t = max(v1/a1, v2/a2);
+		double fin = v3*t;
+		printf("Case %d: %.8lf %.8lf\n", ++cas, d, fin);
+	}
+}
+```
+
