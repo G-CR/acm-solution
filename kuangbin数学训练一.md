@@ -308,3 +308,77 @@ int main() {
 }
 ```
 
+
+
+## Positive Negative Sign
+
+[LightOJ - 1294](https://vjudge.net/problem/LightOJ-1294/origin)
+
+题意：给一个n，一个m，其中 n 可以被 2*m 整除，然后有一个序列，从 1 开始一直到 n，1～m为负号， m+1 ～ 2*m为正号，2m+1 ～ 3m 为负号…问这样的一个序列的和为多少。
+
+思路：从样例入手 题面中给的 12  3 的序列是这样的：
+
+​			**-1 -2 -3** +4 +5 +6 **-7 -8 -9** +10 +11 +12
+
+数据很大，所以枚举或者预处理是不要想的了，规律题。看前六个数据，第一个和第四个相加为3 也就是 m，第二个和第五个相加也是m，第三个和第六个相加仍然是m，7～12个也是这样的规律。所以我们可以每 2*m 个数据一组，每组之和就是 m * m，再乘以组数就👌
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+long long n, m;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lld %lld", &n, &m);
+		printf("Case %d: ", ++cas);
+		long long cnt = n/(2*m);
+		long long sum = m*m;
+		printf("%lld\n", sum*cnt);
+	}
+}
+```
+
+
+
+## Largest Box
+
+[LightOJ - 1297](https://vjudge.net/problem/LightOJ-1297/origin)
+
+题意：一张长为L，宽为W 的纸，照着图中的裁剪方式将四个角各剪出一个边长为x的正方形，并沿着x的边折起来，问x取多大这个折起来的无盖长方体的体积可以最大。
+
+![题面图片](https://img-blog.csdnimg.cn/20200405135341535.png#pic_center)
+
+思路：长方体的体积表达式 $V = (L - 2 * x) * (W - 2 * x) * x$ 
+
+显然是一元三次方程 展开后：
+
+ $V = 4x$<sup>3</sup> $- 2(L+W)x$<sup>2</sup> $+ LWx$ 
+
+求导得：
+
+$F = 12x$<sup>2</sup> $- 4(L+W)x + LW$
+
+这个函数的图像是这样的 /\/ ，所以极大值在求导后为零点的比较小的那个位置。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+double l, w;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lf %lf", &l, &w);
+		double pos = (4*(l+w) - sqrt(16*(l+w)*(l+w)-4*12*l*w))/24;
+		printf("Case %d: %lf\n", ++cas, (l-2*pos)*(w-2*pos)*pos);
+	}
+}
+```
+
