@@ -281,3 +281,30 @@ int main() {
 
 
 
+## Internet Service Providers
+
+[LightOJ - 1275](https://vjudge.net/problem/LightOJ-1275/origin)
+
+题意：利润 = $T * (C - T * N)$ 求 使利润最大时的最小 T
+
+思路：整理一下式子：$W = -N * T$<sup>2</sup> $ + C * T$ 就是一个开口向下的抛物线，需要求W取最大值的时候T的值，需要注意的是在W最大的时候T可能不是整数所以需要比较一下 T 取 ans 与 ans+1 的大小。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+double n, c;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lf %lf", &n, &c);
+		int ans = c/2/n;
+		if(ans*(c-n*ans) < (ans+1)*(c-n*(ans+1))) ans++;
+		printf("Case %d: %d\n", ++cas, n==0?0:ans);
+	}
+}
+```
+
