@@ -248,3 +248,36 @@ int main() {
 
 
 
+## Josephus Problem
+
+##### [LightOJ - 1179](https://vjudge.net/problem/LightOJ-1179/origin)
+
+题意：n个人站成一个圆，1号与n号相连， 1号与2号相连的那种。从1开始报数，报到k时杀掉他，移除这个人；并从k+1个开始重新从0报数，下一个保k的继续杀死，移除；如此循环下来，求最后一个幸存者在最开始的圆圈中的编号是多少。
+
+思路：这是一个**[约瑟夫环](https://blog.csdn.net/u011500062/article/details/72855826?utm_source=app)**的问题。简单分析一下，幸存者的编号在最后剩下他的时候编号肯定是0；那么试想一下，在还剩两个人的时候这个幸存者的编号应该是多少才可以幸存？因为幸存后的他编号是1，就是从还剩两的人的时候死了另一个后往前移动k位变成的，我们把这个k加上去后取一个当时多少人的模就可以得到当时的编号，如此往复就可以得到那个人时候这个幸存者的站位编号了。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+long long n, k;
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%lld %lld", &n, &k);
+		printf("Case %d: ", ++cas);
+		int ans = 0;
+		for(int i = 2;i <= n; i++) {
+			ans = (ans+k)%i;
+			cout << ans+1 << endl;
+		}
+		printf("%d\n", ans+1);
+	}
+}
+```
+
+
+
