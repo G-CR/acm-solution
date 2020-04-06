@@ -511,3 +511,74 @@ int main() {
 }
 ```
 
+
+
+## Aladdin and the Optimal Invitation
+
+[LightOJ - 1349](https://vjudge.net/problem/LightOJ-1349/origin)
+
+题意：在一个 n * m 的格子里，每一个 (u , v) 中都有 w 个人，现在需要将格子中的所有人都聚在一个格子里，从一个(x, y) 移动到 (p, q) 每个人需要 **|x-p|+|y-q|** 步，现在问最少需要多少步才可以把所有人聚在一起，求格子的坐标
+
+思路：分别对x, y 排序， 分别找到中位数的人的坐标就可以了
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _, m, n, q;
+struct node {
+	int x, y, peo;
+}a[50005];
+
+bool cmp1(node p, node q) {
+	return p.x < q.x;
+}
+
+bool cmp2(node p, node q) {
+	return p.y < q.y;
+}
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%d %d %d", &m, &n, &q);
+		int sum = 0;
+		for(int i = 1;i <= q; i++) {
+			scanf("%d %d %d", &a[i].x, &a[i].y, &a[i].peo);
+			sum += a[i].peo;
+		}
+		int now = 0, ansx, ansy;
+		int mid = (sum+1)/2;
+		sort(a+1, a+1+q, cmp1);
+		for(int i = 1;i <= q; i++) {
+			now += a[i].peo;
+			if(now >= mid) {
+				if(sum%2) ansx = a[i].x;
+				else {
+					if(now == mid) ansx = (a[i].x+a[i+1].x)/2;
+					else ansx = a[i].x;
+				}
+				break;
+			}
+		}
+		
+		now = 0;
+		sort(a+1, a+1+q, cmp2);
+		for(int i = 1;i <= q; i++) {
+			now += a[i].peo;
+			if(now >= mid) {
+				if(sum%2) ansy = a[i].y;
+				else {
+					if(now == mid) ansy = (a[i].y+a[i+1].y)/2;
+					else ansy = a[i].y;                           
+				}
+				break;
+			}
+		}
+		
+		printf("Case %d: %d %d\n", ++cas, ansx, ansy);
+	}
+}
+```
+
