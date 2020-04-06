@@ -414,3 +414,100 @@ int main() {
 }
 ```
 
+
+
+## Billiard Balls
+
+[LightOJ - 1323](https://vjudge.net/problem/LightOJ-1323/origin)
+
+**题意**：一堆球在桌子上面运动，难免会碰到一起，要么是球和球，要么是球和桌子，题目也给出了球和球碰撞💥后的轨迹如图：
+
+![撞击墙面](https://img-blog.csdnimg.cn/20200406161908292.png#pic_center)
+
+<center>撞击墙面的情况</center>
+![两球相撞](https://img-blog.csdnimg.cn/20200406162050321.png#pic_center)
+
+​		           
+
+<center>两球相撞</center>
+
+
+
+![多求相撞](https://img-blog.csdnimg.cn/20200406162126806.png#pic_center)
+
+<center>多球相撞</center>
+
+需要求k秒后所有球的位置，并且排序。
+
+**思路**：看得出来，其实这些碰撞可以看成是没有碰撞过，这几个球在碰撞后走的都是对方本该走的路，那么我们可以看成这些球都没有收到任何影响按照自己原来的方向运动就可以了，换句话说就是因为最后输出并不需要每个球的编号对应所在的位置，可以忽略球之间的碰撞，考虑球与桌面的就可以了。球的运动可以分为x方向和y方向，这个球可能走了很久以至于经过了很多次起点，那么如果在x方向就需要对路程K % 2*L 就是球走的有效距离。再分析位于距离起点的什么位置就好了。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct node {
+	int x, y;
+} poi[1005];
+
+bool cmp(node a, node b) {
+	if(a.x == b.x) return a.y < b.y;
+	return a.x < b.x;
+}
+
+int up(int m, int l, int k) {
+	int ans = k % (l*2);
+	if(ans > (l-m)) {
+		if(ans >= 2*l-m) {
+			m = ans + m - 2*l;
+		}
+		else {
+			m = 2*l - ans - m;
+		}
+	}
+	else {
+		m += ans;
+	}
+	return m;
+}
+
+int down(int m, int l, int k) {
+	int ans = k % (l*2);
+	if(ans > m) {
+		if(ans > l+m) {
+			m = 2*l - ans + m;
+		}
+		else {
+			m = ans - m;
+		}
+	}
+	else {
+		m -= ans;
+	}
+	return m;
+}
+
+int main() {
+	int _, cas = 0;
+	scanf("%d", &_);
+	while(_--) {
+		int l, w, n, k;
+		char a, b;
+		scanf("%d %d %d %d", &l, &w, &n, &k);
+		printf("Case %d:\n", ++cas);
+		for(int i = 1;i <= n; i++) {
+			scanf("%d %d %c %c", &poi[i].x, &poi[i].y, &a, &b);
+			if(a == 'N') poi[i].y = up(poi[i].y, w, k);
+			else poi[i].y = down(poi[i].y, w, k);
+			
+			if(b == 'E') poi[i].x = up(poi[i].x, l, k);
+			else poi[i].x = down(poi[i].x, l, k);
+		}
+		
+		sort(poi+1, poi+1+n, cmp);
+		for(int i = 1;i <= n; i++) {
+			printf("%d %d\n", poi[i].x, poi[i].y);
+		}
+	}
+}
+```
+
