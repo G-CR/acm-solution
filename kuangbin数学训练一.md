@@ -774,3 +774,95 @@ int main() {
 }
 ```
 
+
+
+## February 29
+
+[LightOJ - 1414](https://vjudge.net/problem/LightOJ-1414/origin)
+
+题意：给出两个年月日，算这个时间区间里面有多少个2月29号。
+
+思路：闰年定义就不说了。众所周知，一个数除以另一个数就可以算出被除数中包含多少个除数，这个题目也就是这个思路，大年份减小年份再除以需要除的数就可以 算出 **(小年份, 大年份]** 之间包含的除数。
+
+用这个思路求出 年份之间的 可以整除 4 的年份个数， 可以整除 400 的年份个数， 可以整除100 的年份个数。前两个相加再减去第三个就可以得到一个近似答案了。
+
+然后再讨论这两个边界年份，小年份如果是闰年并且日期早于 2月29日 答案就需要+1；大年份如果是闰年，但是日期早于 2月29日 那么答案需要 -1；最后就可以输出了。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _;
+string month1, day1, month2, day2;
+long long year1, year2;
+map <string, int> mon;
+
+void init() {
+	mon["January"] = 1; mon["February"] = 2; mon["March"] = 3;
+	mon["April"] = 4; mon["May"] = 5; mon["June"] = 6; 
+	mon["July"] = 7; mon["August"] = 8; mon["September"] = 9; 
+	mon["October"] = 10; mon["November"] = 11; mon["December"] = 12;
+}
+
+bool check(long long year) {
+	if(year % 100 == 0) {
+		if(year % 400 == 0) return 1;
+		else return 0;
+	}
+	else if(year % 4 == 0) return 1;
+	else return 0;
+}
+
+int main() {
+	init();
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		cin >> month1 >> day1 >> year1;
+		cin >> month2 >> day2 >> year2;
+		printf("Case %d: ", ++cas);
+		
+		int ans = (year2/4-year1/4) + (year2/400-year1/400) - (year2/100-year1/100);
+		if(check(year1) && mon[month1] <= 2) ans++;
+		if(check(year2) && !(mon[month2] >= 3 || (mon[month2] == 2 && day2 == "29,"))) ans--;
+		
+		printf("%d\n", ans);
+	}
+}
+```
+
+
+
+## Eid
+
+[LightOJ - 1024](https://vjudge.net/problem/LightOJ-1024/origin)
+
+题意： 求最小公倍数
+
+思路：数据很大，需要Java大数来做
+
+```java
+import java.util.Scanner;
+import java.math.BigInteger;
+
+class Main {
+	public static void main(String[] args) {
+		Scanner input = new Scanner(System.in);
+		int t = input.nextInt();
+		for(int tt = 1;tt <= t; tt++) {
+			int n = input.nextInt();
+			BigInteger ans, m, k;
+			m = input.nextBigInteger();
+			ans = m;
+			for(int i = 1;i < n; i++) {
+				m = input.nextBigInteger();
+				k = ans.gcd(m);
+				ans = ans.multiply(m).divide(k);
+			}
+			System.out.println("Case "+ tt + ": " + ans);
+			System.gc();
+		}
+	}
+}
+```
+
