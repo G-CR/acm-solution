@@ -736,3 +736,41 @@ int main() {
 
 
 
+## Consistent Verdicts
+
+[LightOJ - 1410](https://vjudge.net/problem/LightOJ-1410/origin)
+
+题意：在一个平面上有N个人，每个人的听力范围都相同但未知，现在每个人都在自己的点开枪，在与他距离在听力范围内的人都听到枪声，求在每个人开一遍枪之后每个人听到多少声的枪响的可能组合的数量。
+
+思路：有多少种不同的距离就是解的数量
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int _, n;
+long long x[705], y[705], dis[500000];
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%d", &n);
+		for(int i = 1;i <= n; i++) {
+			scanf("%lld %lld", &x[i], &y[i]);
+		}
+		
+		int cnt = 0;
+		for(int i = 1;i <= n; i++) {
+			for(int j = i+1;j <= n; j++) {
+				dis[++cnt] = (x[i]-x[j])*(x[i]-x[j])+(y[i]-y[j])*(y[i]-y[j]);
+			}
+		}
+		
+		sort(dis+1, dis+1+cnt);
+		int num = unique(dis+1, dis+1+cnt) - dis;
+		printf("Case %d: %d\n", ++cas, num);
+	}
+}
+```
+
