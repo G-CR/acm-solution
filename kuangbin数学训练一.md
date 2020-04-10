@@ -866,3 +866,59 @@ class Main {
 }
 ```
 
+
+
+## Monkey Tradition
+
+[LightOJ - 1319](https://vjudge.net/problem/LightOJ-1319/origin)
+
+题意：N个🐒爬N个长为L的竹竿，每个🐒每个单位时间爬的高度不一样，最后就会有长度长度剩余，因为不够🐒一次爬的嘛，就根据这些不同的剩余长度，求L（🐒单位时间爬的高度都是质数）。
+
+思路：中国剩余定理，可以[学](https://blog.csdn.net/S_999999/article/details/89298179)一下。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+long long m[20], a[20];
+int _, n;
+
+void exgcd(long long a, long long b, long long &x, long long &y) {
+	if(!b) {
+		x = 1;
+		y = 0;
+	}
+	else {
+		exgcd(b, a%b, y, x);
+		y -= (a/b) * x;
+	}
+}
+
+long long CRT() {
+	long long M = 1;
+	for(int i = 1;i <= n; i++) M *= m[i];
+	long long ans = 0;
+	for(int i = 1;i <= n; i++) {
+		long long x, y, Mi;
+		Mi = M/m[i];
+		exgcd(Mi, m[i], x, y);
+		ans = (ans + a[i]*Mi*x) % M;
+	}
+	
+	if(ans < 0) ans += M;
+	return ans;
+}
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%d", &n);
+		for(int i = 1;i <= n; i++) {
+			scanf("%lld %lld", &m[i], &a[i]);
+		}
+		printf("Case %d: %lld\n", ++cas, CRT());
+	}
+}
+```
+
