@@ -40,6 +40,62 @@ int main() {
 
 
 
+## C - 十面埋伏
+
+思路：DFS从（0，0）开始把 '#' 外面的部分全部标记起来，然后开始遍历，如果是'#'的话，就把旁边的标记的变成'*'，遍历完了之后再把那些标记但是没有改变的位置变回原来的'.'。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int n, m;
+char a[505][505];
+int dx[] = {-1,1,0,0};
+int dy[] = {0,0,-1,1};
+
+void dfs(int x, int y) {
+	a[x][y] = 'x';
+	for(int i = 0;i < 4; i++) {
+		int tx = x+dx[i], ty = y+dy[i];
+		if(tx < 0 || ty < 0 || tx > n-1 || ty > m-1) continue;
+		if(a[tx][ty] == '.') dfs(tx, ty);
+	}
+}
+
+int main() {
+	scanf("%d %d", &n, &m);
+	for(int i = 0;i < n; i++) scanf("%s", a[i]);
+	
+	dfs(0,0);
+	
+	for(int i = 0;i < n; i++) {
+		for(int j = 0;j < m; j++) {
+			if(a[i][j] == '#') {
+				for(int k = 0;k < 4; k++) {
+					int tx = i+dx[k], ty = j+dy[k];
+					if(a[tx][ty] == 'x') a[tx][ty] = '*';
+				}
+			}
+		}
+	}
+	
+	for(int i = 0;i < n; i++) {
+		for(int j = 0;j < m; j++) {
+			if(a[i][j] == 'x') a[i][j] = '.';
+		}
+	}
+	
+	for(int i = 0;i < n; i++) {
+		for(int j = 0;j < m; j++) {
+			printf("%c", a[i][j]);
+		}
+		puts("");
+	}
+}
+```
+
+
+
 ## D - 牛妹吃豆子
 
 思路：因为是统一把修改放在一起，然后把查询放在一起，就可以通过求二维差分的方法来修改矩阵中的值，之后求一次二维前缀和就可以 O(1) 求查询了。
@@ -102,7 +158,92 @@ int main() {
 
 
 
-## F - 斗兽棋 
+## E - 旅游旅游 
+
+思路：题目是要求 **把所有是最段路需要经过的边都给删除掉，剩余的边是否任然能够把所有的点连在一起** 
+
+我们首先需要知道最短的路长度为多少，然后我们需知道哪一条边是构成最短路径的边就好办了，因为把这些边过滤掉，跑一遍 kruskal 就知道他们是不是连在一起的啦。 
+
+那么求最短路这个很好想到嘛，用Dijkstra来搞一搞，那怎么知道哪些边构成了最短路呢，这个办法就有点巧妙了：
+
+设一条路一端是城市 u，一端是城市 v，这条路长度为 w。那么如何判断这条路是不是构成最短路的边呢？是不是可以 判断一下 **城市1 -> 城市u 的最短路径 + w + 城市v -> 城市n 的最短路径** （or 城市1 -> 城市v 的最短路径 + w + 城市u -> 城市n 的最短路径）**== 最短路径** 的时候就可以断定这条路一定是构成最段路的那条边，那么也由此可见，我们在求最段路的时候需要求两个源点的，一个是城市1到所有点，一个是城市n到所有点。最后用这个条件作为kruskal的加边的条件，构成最段路就跳过，不是就加入父子关系大家庭，之后for验证一下大家的父亲是否一样就👌。 这题是我补出来的，构造函数在传step的时候忘记开 long long 真的找死。 
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct node1 {
+	long long num, step;
+	node1(int u, long long s) {
+		num = u; step = s;
+	}
+	bool operator < (const node1&o) const {
+		return o.step < step;
+	}
+};
+struct node2 {
+	int u, v, w;
+}edge[500005];
+int n, m, fa[100005];
+long long dist[2][100005];
+vector <int> poi[100005], len[100005];
+priority_queue <node1> q;
+
+int find(int x) {
+	if(fa[x] == x) return x;
+	else return fa[x] = find(fa[x]);
+}
+
+void dijkstra(bool a, int sta) {
+	for(int i = 1;i <= n; i++) dist[a][i] = 1e18;
+	dist[a][sta] = 0;
+	q.push(node1(sta, 0));
+	while(!q.empty()) {
+		node1 t = q.top(); q.pop();
+		if(t.step > dist[a][t.num]) continue;
+		for(int i = 0;i < poi[t.num].size(); i++) {
+			int k = poi[t.num][i];
+			if(dist[a][k] > t.step + len[t.num][i]) {
+				dist[a][k] = t.step + len[t.num][i];
+				q.push(node1(k, dist[a][k]));
+			}
+		}
+	}
+}
+
+int main() {
+	scanf("%d %d", &n, &m);
+	for(int i = 1;i <= n; i++) fa[i] = i;
+	for(int i = 1;i <= m; i++) {
+		scanf("%d %d %d", &edge[i].u, &edge[i].v, &edge[i].w);
+		poi[edge[i].u].push_back(edge[i].v); poi[edge[i].v].push_back(edge[i].u);
+		len[edge[i].u].push_back(edge[i].w); len[edge[i].v].push_back(edge[i].w);
+	}
+	dijkstra(0,1); dijkstra(1, n);
+	long long ans = dist[0][n];
+	
+	for(int i = 1;i <= m; i++) {
+		if(dist[0][edge[i].u]+edge[i].w+dist[1][edge[i].v]==ans || dist[0][edge[i].v]+edge[i].w+dist[1][edge[i].u]==ans) continue;
+		int u = find(edge[i].u);
+		int v = find(edge[i].v);
+		if(u != v) fa[u] = v;
+	}
+	
+	bool ok = 1;
+	for(int i = 2;i <= n; i++) {
+		if(find(1) != find(i)) {
+			ok = 0;
+			break;
+		}
+	}
+	if(ok) puts("YES");
+	else puts("NO");
+}
+```
+
+
+
+## F - 斗兽棋
 
 思路：舔🐶水题
 
