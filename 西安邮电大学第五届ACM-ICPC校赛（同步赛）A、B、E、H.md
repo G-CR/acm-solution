@@ -6,7 +6,7 @@
 
 首先，每一天的伤害都是由小洞和大洞一起提供的，不论大小都会减少史莱姆3点HP，所以我们需要把每一天有多少个大洞和小洞求出来也可以得到第i天的伤害了，最后弄一个前缀和就可以 O(1) 求出前 i 天的伤害。
 
-![IMG_1675(20200523-225606)](/Users/gongzhaorui/Downloads/IMG_1675(20200523-225606).JPG)
+![关系推导](https://img-blog.csdnimg.cn/20200523232820781.JPG?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTQxOTEzOA==,size_16,color_FFFFFF,t_70#pic_center)
 
 看一下推导图，从第五天开始
 
@@ -42,6 +42,66 @@ int main() {
 	while(~scanf("%lld", &hp) && hp) {
 		if(hp <= sum) puts("AOLIGEI!");
 		else puts("DAAAAAMN!");
+	}
+}
+```
+
+
+
+## B - 烦人的依赖
+
+思路：能够安装一个软件需要满足条件：**安装这个软件需要依赖的软件已经安装好** 或者 **这个软件没有依赖软件** 输入会给出依赖关系，b依赖于a，那么就表示为a->b.最先安装的当然就是没有依赖的那一批，换句话说就是没有软件指向它，也就是这个点的入度为0 。那么如何找下一批呢，需要先建图吧，把依赖于软件i的软件 j 都跟 i 单向连接上，然后遍历这些 j 软件时 将他们的入度减1（相当于i已经安装了，通过i的入度就没有了），如果有入度为0的软件就继续安装。这个算法就是 **拓扑排序** ，将节点的逻辑先后关系进行排序。 然后我们需要处理同等级别的软件需要按照字典序排列安装，就把选中的软件丢到优先队列里面就可以了。还有一点点就是用map来把字符串转换为数来处理。
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+string soft_ware[30004];
+vector <int> g[30004], ans;
+unordered_map <string, int> mp;
+priority_queue <int, vector<int>, greater<int> > q;
+int n, m, _, in[30004];
+
+int main() {
+	scanf("%d", &_);
+	for(int cas = 1;cas <= _; cas++) {
+		scanf("%d %d", &n, &m);
+		
+		memset(in, 0, sizeof(in));
+		for(int i = 1;i <= n; i++) g[i].clear();
+		ans.clear(); mp.clear();
+		
+		for(int i = 1;i <= n; i++) cin >> soft_ware[i];
+		sort(soft_ware+1, soft_ware+1+n);
+		for(int i = 1;i <= n; i++) mp[soft_ware[i]] = i;
+		for(int i = 1;i <= m; i++) {
+			string u, v;
+			cin >> u >> v;
+			in[mp[v]]++;
+			g[mp[u]].push_back(mp[v]);
+		}
+		for(int i = 1;i <= n; i++) {
+			if(in[i] == 0) q.push(i);
+		}
+		
+		while(!q.empty()) {
+			int t = q.top(); q.pop();
+			if(in[t] == 0) ans.push_back(t);
+			int len = g[t].size();
+			for(int i = 0;i < len; i++) {
+				int k = g[t][i];
+				in[k]--;
+				if(in[k] == 0) q.push(k);
+			}
+		}
+		printf("Case #%d:\n", cas);
+		int cnt = ans.size();
+		if(cnt != n) puts("Impossible");
+		else {
+			for(int i = 0;i < cnt; i++) {
+				cout << soft_ware[ans[i]] << endl;
+			}
+		}
 	}
 }
 ```
