@@ -828,7 +828,6 @@ double PolygonArea(Point *p,int n) {
 using namespace std;
 
 const double eps = 1e-8;
-const double pi = acos(-1.0);
 const int maxp = 10005;
 
 int sgn(double x) {
@@ -1893,6 +1892,31 @@ vector<Point> convexCut(const vector<Point> &ps,Point q1,Point q2){
 //`半平面交`
 //`测试 POJ3335 POJ1474 POJ1279`
 //***************************
+struct Vector: public Point {
+	Vector(){}
+	Vector(double a,double b) {
+		x=a;    y=b;
+	}
+	Vector(Point _a,Point _b) { //a->b
+	
+		double dx=_b.x-_a.x;
+		double dy=_b.y-_a.y;
+		x=dx;   y=dy;
+	}
+	Vector(Line v) {
+		double dx=v.e.x-v.s.x;
+		double dy=v.e.y-v.s.y;
+		x=dx;   y=dy;
+	}
+	double length() {
+		return (sqrt(x*x+y*y));
+	}
+	Vector Normal() { //返回this的单位长度的法向量
+		double L=sqrt(x*x+y*y);
+		Vector Vans=Vector(-y/L,x/L);
+		return Vans;
+	}
+};
 struct halfplane:public Line{
 	double angle;
 	halfplane(){}
