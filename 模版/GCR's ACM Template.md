@@ -148,10 +148,25 @@ void Mobius() {
 ### 求逆元
 
 ```cpp
+// 模数为质数的时候
 long long inv(long long a, long long b){  // b为模数 传参-2
 	long long res=1;
 	for(;b;b>>=1,a=1ll*a*a%mod) if(b&1) res=1ll*res*a%mod;  
 	return res;
+}
+
+
+// 模数不为质数的时候
+// exgcd(a, mod, x, y) -> a为需要求逆元的数，mod为模数，x为逆元
+void exgcd(long long a, long long b, long long &x, long long &y) {
+	if(!b) {
+		x = 1;
+		y = 0;
+	}
+	else {
+		exgcd(b, a%b, y, x);
+		y -= (a/b) * x;
+	}
 }
 ```
 
@@ -371,6 +386,150 @@ int main() {
         else printf("%d\n", res);
     }
     return 0;
+}
+```
+
+### 中国剩余定理
+
+```cpp
+// 解模数互质的模线性方程组
+#include <bits/stdc++.h>
+using namespace std;
+
+long long m[20], a[20];
+int _, n;
+
+void exgcd(long long a, long long b, long long &x, long long &y) {
+	if(!b) {
+		x = 1;
+		y = 0;
+	}
+	else {
+		exgcd(b, a%b, y, x);
+		y -= (a/b) * x;
+	}
+}
+
+long long CRT() {
+	long long M = 1;
+	for(int i = 1;i <= n; i++) M *= m[i];
+	long long ans = 0;
+	for(int i = 1;i <= n; i++) {
+		long long x, y, Mi;
+		Mi = M/m[i];
+		exgcd(Mi, m[i], x, y);
+		ans = (ans + a[i]*Mi*x) % M;
+	}
+	
+	if(ans < 0) ans += M;
+	return ans;
+}
+
+int main() {
+	scanf("%d", &_);
+	int cas = 0;
+	while(_--) {
+		scanf("%d", &n);
+		for(int i = 1;i <= n; i++) {
+			scanf("%lld %lld", &m[i], &a[i]);
+		}
+		printf("Case %d: %lld\n", ++cas, CRT());
+	}
+}
+```
+
+
+
+### 扩展中国剩余定理
+
+```cpp
+// 解模数不互质的模线性方程组
+#include <bits/stdc++.h>
+using namespace std;
+
+long long mod[100005], x[100005];
+int n;
+
+long long Exgcd(long long a,long long b,long long &x,long long &y) {
+	if(!b) {x=1,y=0;return a;}
+	long long gcd=Exgcd(b,a%b,y,x);
+	y -= a/b*x;
+	return gcd;
+}
+
+long long Ex_crt() {
+	long long lcm=mod[1],last_x=x[1];
+	for(int i=2;i<=n;i++) {
+		long long lcm_a=((x[i]-last_x)%mod[i]+mod[i])%mod[i],x,y,k=lcm;
+		long long gcd=Exgcd(lcm,mod[i],x,y);
+		if(lcm_a%gcd) return -1; // 不存在的情况
+		x=(x*lcm_a/gcd%(mod[i]/gcd)+(mod[i]/gcd))%(mod[i]/gcd);
+		lcm=lcm*mod[i]/gcd,last_x=(last_x+k*x)%lcm;
+	}
+	return (last_x%lcm+lcm)%lcm;
+}
+
+int main() {
+	scanf("%d", &n);
+	for(int i = 1;i <= n; i++) {
+		scanf("%lld %lld", &mod[i], &x[i]);
+	}
+	printf("%lld\n", Ex_crt());
+}
+```
+
+
+
+### FFT
+
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+
+const int N = 400007;
+const double pi = acos(-1.0);
+int n, m;
+int rev[N];
+struct CP {
+	double x,y;
+	CP operator+ (const CP& t) const{ return {x + t.x, y + t.y}; }
+	CP operator- (const CP& t) const{ return {x - t.x, y - t.y}; }
+	CP operator* (const CP& t) const{ return {x * t.x - y * t.y, x * t.y + y * t.x}; }
+} a[N], b[N];
+
+void FFT(CP *A, int n, int flag) {
+	for(int i=0;i<n;++i) if(i < rev[i]) swap(A[i],A[rev[i]]);
+	for(int mid=1;mid<n;mid<<=1) {
+		CP Wn = {cos(2*pi/(mid<<1)) , flag*sin(2*pi/(mid<<1))};
+		for(int i=0;i<n;i+=(mid<<1)) {
+			CP W = {1 , 0};
+			for(int j=0;j<mid;++j,W=(W*Wn)) {
+				CP tmp0 = A[i+j], tmp1 = W*A[i+mid+j];
+				A[i+j] = tmp0 + tmp1;
+				A[i+mid+j] = tmp0 - tmp1;
+			}
+		}
+	}
+}
+
+
+int main() {
+	scanf("%d %d", &n, &m);
+	for(int i = 0; i <= n; i++) scanf("%lf", &a[i].x);
+	for(int i = 0; i <= m; i++) scanf("%lf", &b[i].x);
+	
+	int lim = 1, L = 0; 
+	while(lim <= n+m) lim <<= 1, ++L; // lim为最终多项式的最大可能长度，与n有关，根据题目修改
+	for(int i = 0;i < lim; i++) rev[i] = (rev[i>>1]>>1) | ((i&1)<<(L-1));
+	
+	FFT(a, lim, 1); FFT(b, lim, 1);
+	for(int i = 0; i < lim; i++) a[i] = a[i] * b[i];
+	FFT(a, lim, -1);
+	
+	for(int i = 0; i <= n+m; i++) {
+		printf("%d ", (int)(a[i].x / lim + 0.5));
+	}
+	puts("");
 }
 ```
 
@@ -995,6 +1154,139 @@ int main() {
 
 
 
+### 最小圆覆盖相关
+
+```cpp
+#include <iostream>
+#include <cstring>
+#include <algorithm>
+#include <cmath>
+using namespace std;
+
+const int N = 100010;
+const double eps = 1e-12;
+const double PI = acos(-1);
+
+int sgn(double x) {
+	if(fabs(x) < eps) return 0;
+	if(x < 0) return -1;
+	else return 1;
+}
+
+struct Point { // 表示点
+	double x, y;
+	Point(){}
+	Point(double _x,double _y) {
+		x = _x; y = _y;
+	}
+	Point operator + (const Point& b) const {
+		return {x + b.x, y + b.y};
+	}
+	Point operator - (const Point &b) const {
+		return Point(x - b.x, y - b.y);
+	}
+	Point operator * (const double &b) const {
+		return Point(x * b, y * b);
+	}
+	Point operator / (const double &b) const {
+		return Point(x / b, y / b);
+	}
+	
+	double operator * (const Point &b) const {
+		return x*b.y - y*b.x;
+	}
+	bool operator < (Point b) const {
+		return sgn(x-b.x) == 0 ? sgn(y-b.y) < 0: x < b.x;
+	}
+	bool operator == (Point b) const {
+		return sgn(x-b.x) == 0 && sgn(y-b.y) == 0;
+	}
+	Point rotate(Point p,double angle){ // 以p为圆心逆时针旋转angle
+		Point v = (*this) - p;
+		double c = cos(angle), s = sin(angle);
+		return Point(p.x + v.x*c - v.y*s,p.y + v.x*s + v.y*c);
+	}
+};
+
+struct Line { // 表示线段
+	Point s,e;
+	Line(){}
+	Line(Point _s,Point _e) {
+		s = _s;e = _e;
+	}
+};
+
+struct circle {
+	Point p;
+	double r;
+};
+
+double get_dist(Point a, Point b) {
+	double dx = a.x - b.x;
+	double dy = a.y - b.y;
+	return sqrt(dx * dx + dy * dy);
+}
+
+Point get_line_intersection(Point p, Point v, Point q, Point w) {
+	Point u = p - q;
+	double t = w * u / (v * w);
+	return p + v * t;
+}
+
+Line get_line(Point a, Point b) {
+	return Line((a + b) / 2, Point(b-a).rotate(Point(0,0), PI/2)); 
+}
+
+circle get_circle(Point a, Point b, Point c)
+{
+	auto u = get_line(a, b), v = get_line(a, c);
+	auto p = get_line_intersection(u.s, u.e, v.s, v.e);
+	return {p, get_dist(p, a)};
+}
+
+int n;
+Point p[N];
+
+circle solve() {
+	random_shuffle(p, p + n);
+	circle c({p[0], 0});
+	for (int i = 1; i < n; i ++ ) {
+		if (sgn(c.r-get_dist(c.p, p[i])) < 0) {
+			c = {p[i], 0};
+			
+			for (int j = 0; j < i; j ++ ) {
+				if (sgn(c.r-get_dist(c.p, p[j])) < 0) {
+					c = {(p[i] + p[j]) / 2, get_dist(p[i], p[j]) / 2};
+					
+					for (int k = 0; k < j; k ++ ) {
+						if (sgn(c.r-get_dist(c.p, p[k])) < 0) {
+							c = get_circle(p[i], p[j], p[k]);
+						}
+					}
+					
+				}
+			}
+			
+		}
+	}
+	
+	return c;
+}
+
+int main() {
+	scanf("%d", &n);
+	for (int i = 0; i < n; i ++ ) scanf("%lf %lf", &p[i].x, &p[i].y);
+	
+	circle c = solve();
+	
+	printf("%.10lf\n", c.r);
+	printf("%.10lf %.10lf\n", c.p.x, c.p.y);
+	return 0;
+}
+```
+
+
+
 ### 三角形相关
 
 ```cpp
@@ -1228,18 +1520,18 @@ struct Line{
 		}
 	}
 	//ax+by+c=0
-	Line(double a,double b,double c){
-		if(sgn(a) == 0){
-			s = Point(0,-c/b);
-			e = Point(1,-c/b);
+	Line(double a,double b,double c){//ax+by+c=0
+		if(!sgn(a)){
+			s=Point(0,-c/b),e=Point(1,-c/b);
+			if(sgn(b)>0)adjust();   // 保证点是逆时针 有时候需要变号
 		}
-		else if(sgn(b) == 0){
-			s = Point(-c/a,0);
-			e = Point(-c/a,1);
+		else if(!sgn(b)){
+			s=Point(-c/a,0),e=Point(-c/a,1);
+			if(sgn(a)<0)adjust();
 		}
 		else{
-			s = Point(0,-c/b);
-			e = Point(1,(-c-a)/b);
+			s=Point(0,-c/b),e=Point(1,(-c-a)/b);
+			if(sgn(b)>0)adjust();
 		}
 	}
 	void input(){
