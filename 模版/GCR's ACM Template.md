@@ -168,6 +168,22 @@ void exgcd(long long a, long long b, long long &x, long long &y) {
 		y -= (a/b) * x;
 	}
 }
+
+// 线性递推1～n所有数的逆元
+#include <bits/stdc++.h>
+using namespace std;
+
+long long n, p;
+long long inv[3000006];
+
+int main() {
+	scanf("%lld %lld", &n, &p);
+	inv[1] = 1; puts("1");
+	for(int i = 2; i <= n; i++) {
+		inv[i] = 1ll * (p - p/i) * inv[p%i] % p;
+		printf("%lld\n", inv[i]);
+	}
+}
 ```
 
 
@@ -3059,5 +3075,16 @@ int main() {
 
 ```cpp
 cerr << "Time elapsed: " << 1.0*clock()/CLOCKS_PER_SEC << "s\n";
+```
+
+### 快速读入
+
+```cpp
+int read() {
+	int x=0,flag=1;char c;
+	while((c=getchar())<'0' || c>'9') if(c=='-') flag=-1;
+	while(c>='0' && c<='9') x=(x<<3)+(x<<1)+(c^48),c=getchar();
+	return x*flag;
+}
 ```
 
