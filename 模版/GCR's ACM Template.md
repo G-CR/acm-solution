@@ -3080,11 +3080,21 @@ cerr << "Time elapsed: " << 1.0*clock()/CLOCKS_PER_SEC << "s\n";
 ### 快速读入
 
 ```cpp
-int read() {
+inline int read() {
 	int x=0,flag=1;char c;
 	while((c=getchar())<'0' || c>'9') if(c=='-') flag=-1;
 	while(c>='0' && c<='9') x=(x<<3)+(x<<1)+(c^48),c=getchar();
 	return x*flag;
+}
+```
+
+### 快速输出
+
+```cpp
+inline void write(int x){
+	if (x < 0) x = ~x + 1, putchar('-');
+	if (x > 9) write(x / 10);
+	putchar(x % 10 + '0');
 }
 ```
 
