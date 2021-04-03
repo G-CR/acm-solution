@@ -273,8 +273,8 @@ long long c(long long n, long long r) {
 ```cpp
 long long Exgcd(long long a,long long b,long long &x,long long &y) {
 	if(!b) {x = 1,y = 0; return a;}
-	long long gcd = Exgcd(b,a%b,x,y),tmp=x;
-	x = y,y = tmp-a/b*y;
+	long long gcd = Exgcd(b,a%b,y,x);
+	y = a/b*x;
 	return gcd;
 }
 ```
