@@ -3,37 +3,35 @@
 ### 素数筛
 
 ```cpp
-const int N = 1e6;
-int isPrime[N+10], phi[N+10];
+// 埃式筛法
+const int M = 20;
+bool isprime[M+5];
 
-void Eular() { // 欧拉函数
-	for(int i = 1;i <= N; i++) phi[i] = i;
-	memset(isPrime, true, sizeof(isPrime));
-	isPrime[0] = isPrime[1] = false;
-	phi[1] = 0; // 看题目情况决定是否为0
-	for(int i = 2;i <= N; i++) {
-		if(isPrime[i]) {
-			for(int j = i;j <= N; j+=i) {
-				isPrime[j] = false;
-				phi[j] -= phi[j]/i;
-			}
+void solve() {
+	for(int i = 2;i <= M; i++) isprime[i] = 1;
+	for(int i = 2;i <= M; i++) {
+		if(isprime[i]) {
+			for(int j = i*2; j<= M; j += i)
+				isprime[j] = 0;
 		}
 	}
 }
 
+// 线性筛
+const int N = 1e7;
+int isprime[N+10], prime[N+10];
+int pn = 0;
 
-long long phi(long long n) { // 求单个值的欧拉函数
-	long long ans = n ;
-	for(long long i = 2 ; i*i<=n ; i++ ) {
-		if(!(n%i)){
-			ans = ans/i*(i-1) ;
-			while(n%i == 0 ){
-				n/=i ;
-			}
+void getprime() {
+	memset(isprime, -1, sizeof(isprime));
+	isprime[1] = 0;
+	for(int i = 2;i < N;i++){
+		if(isprime[i]) prime[pn++] = i;
+		for(int j = 0;j < pn && 1ll*i*prime[j] < N;j++) {
+			isprime[i*prime[j]] = 0;
+			if(i % prime[j] == 0) break;
 		}
 	}
-	if(n>1) ans = ans/n*(n-1);
-	return ans;
 }
 ```
 
@@ -862,63 +860,6 @@ Point center(Point a, Point b, Point c) { // 三点共圆圆心公式
 ### 凸包相关
 
 ```cpp
-const int N = 10004;
-Point poly[N];
-int sta[N], top;
-//利用极角排序，角度相同则距离小排前面
-bool cmp(Point p1, Point p2) {
-	double tmp = xmult(poly[0], p1, p2);
-	if (tmp > 0)
-		return true;
-	else if (tmp == 0 && dist(poly[0], p1) < dist(poly[0], p2))
-		return true;
-	else
-		return false;
-}
-
-//输入，并把  最左下方的点放在 poly[0] , 并且进行极角排序
-void init(int n) {
-	int i, k = 0;
-	cin >> poly[0].x >> poly[0].y;
-	Point p0 = poly[0];  // p0 等价于 tmp 去寻找最左下方的点
-	for (int i = 1; i < n; ++i) {
-		cin >> poly[i].x >> poly[i].y;
-		if (p0.y > poly[i].y || (p0.y == poly[i].y && p0.x > poly[i].x))
-			p0 = poly[i], k = i;
-	}
-	poly[k] = poly[0];
-	poly[0] = p0;
-	sort(poly + 1, poly + n, cmp);
-}
-
-//graham扫描法求凸包，凸包顶点存在sta栈中
-//从栈底到栈顶一次是逆时针方向排列的
-//如果要求凸包的一条边有2个以上的点
-//那么要将while中的<=改成<
-//但这不能将最后一条边上的多个点保留
-//因为排序时将距离近的点排在前面
-//那么最后一条边上的点仅有距离最远的会被保留，其余的会被出栈
-//所以最后一条边需要特判
-//如果要求逆凸包的话需要改cmp，graham中的符号即可
-void Graham(int n) {
-	if (n == 1) top = 0, sta[0] = 0;
-	if (n == 2) top = 1, sta[0] = 0, sta[1] = 1;
-	if (n > 2) {
-		for (int i = 0; i <= 1; i++) sta[i] = i;
-		top = 1;
-		
-		for (int i = 2; i < n; i++) {
-			while (top > 0 && xmult(poly[sta[top - 1]], poly[sta[top]], poly[i]) <= 0)
-				top--;
-			top++;
-			sta[top] = i;
-		}
-	}
-}
-
-// ---------------- 以上求凸包 --------------------
-
-
 //判断凸多边形
 //允许共线边
 //点可以是顺时针给出也可以是逆时针给出
@@ -992,6 +933,157 @@ double PolygonArea(Point *p,int n) {
 	return area/2;
 }
 ```
+
+### 动态凸包
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+typedef map<int, int>::iterator iter;
+
+struct Point {
+	int x, y;
+	Point(){}
+	Point (int _x, int _y) {
+		x = _x; y = _y;
+	}
+	ll operator ^ (const Point &b) const {
+		return 1ll * x * b.y - 1ll * y * b.x;
+	}
+	void input() {
+		scanf("%d %d", &x, &y);
+	}
+};
+
+struct dynamic_polygon {
+	map <int, int> top, down;
+	void insert_top(Point p) {
+		if (check_top(p))
+			return;
+		int x = p.x, y = p.y;
+		top[x] = y;
+		iter it = top.find(x);
+		iter jt = it;
+		if (it != top.begin()) {
+			--jt;
+			while (remove_top(jt++))
+				--jt;
+		}
+		if (++jt != top.end())
+			while (remove_top(jt--))
+			++jt;
+	}
+	
+	void insert_down(Point p) {
+		if (check_down(p))
+			return;
+		int x = p.x, y = p.y;
+		down[x] = y;
+		iter it = down.find(x);
+		iter jt = it;
+		
+		if (it != down.begin()) {
+			--jt;
+			while (remove_down(jt++))
+				--jt;
+		}
+		if (++jt != down.end())
+			while (remove_down(jt--))
+			++jt;
+	}
+	bool remove_top(iter it) {
+		if (it == top.begin())
+			return false;
+		iter jt = it, kt = it;
+		--jt;
+		++kt;
+		if (kt == top.end())
+			return false;
+		
+		Point p1 (it->first - jt->first, it->second - jt->second);
+		Point p2 (kt->first - jt->first, kt->second - jt->second);
+		if((p1 ^ p2) >= 0) {
+			top.erase(it);
+			return true;
+		}
+		return false;
+	}
+	bool remove_down(iter it) {
+		if (it == down.begin())
+			return false;
+		iter jt = it, kt = it;
+		--jt;
+		++kt;
+		if (kt == down.end())
+			return false;
+		
+		Point p1 = Point(it->first - jt->first, it->second - jt->second);
+		Point p2 = Point(kt->first - jt->first, kt->second - jt->second);
+		if ((p1 ^ p2) <= 0) {
+			down.erase(it);
+			return true;
+		}
+		return false;
+	}
+	
+	bool check_top(Point p) {
+		int x = p.x, y = p.y;
+		iter it = top.lower_bound(x);
+		if (it == top.end())
+			return false;
+		if (it->first == x)
+			return y <= it->second;
+		if (it == top.begin())
+			return false;
+		iter jt = it;
+		--jt;
+		Point p1 (it->first - jt->first, it->second - jt->second);
+		Point p2 (x - jt->first, y - jt->second);
+		return (p1 ^ p2) <= 0;
+	};
+	
+	bool check_down(Point p) {
+		int x = p.x, y = p.y;
+		iter it = down.lower_bound(x);
+		if (it == down.end())
+			return false;
+		if (it->first == x)
+			return y >= it->second;
+		if (it == down.begin())
+			return false;
+		iter jt = it;
+		--jt;
+		Point p1 (it->first - jt->first, it->second - jt->second);
+		Point p2 (x - jt->first, y - jt->second);
+		return (p1 ^ p2) >= 0;
+	}
+	
+	void insert(Point p) { // 插入点p到凸包内
+		insert_top(p);
+		insert_down(p);
+	}
+	
+	bool check(Point p) { // 检查点p是否在凸包内
+		if(check_top(p) && check_down(p)) return 1;
+		else return 0;
+	}
+};
+
+dynamic_polygon poly;
+
+int main() {
+	int _; scanf("%d", &_);
+	while(_--) {
+		int op; scanf("%d", &op);
+		Point p; p.input();
+		if(op == 1) poly.insert(p);
+		else puts(poly.check(p) ? "YES" : "NO");
+	}
+}
+```
+
+
 
 ### 半平面交相关
 
