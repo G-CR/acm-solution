@@ -86,6 +86,16 @@ long long qpow(long long x, long long n) {
 }
 ```
 
+### 快速乘
+
+```cpp
+long long mul(long long a, long long b, long long P) {
+	long long L = a * (b >> 25ll) % P * (1ll << 25) % P;
+	long long R = a * (b & ((1ll << 25) - 1)) % P;
+	return (L + R) % P;
+}
+```
+
 
 
 ### 最小质因子
