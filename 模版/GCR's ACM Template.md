@@ -674,6 +674,73 @@ int main() {
 
 
 
+### 杜教筛筛莫比乌斯函数和欧拉函数的前缀和
+
+```cpp
+#include<bits/stdc++.h>
+#define N 6000010
+using namespace std;
+bool vis[N];
+int mu[N],sum1[N],phi[N];
+long long sum2[N];
+int cnt, prim[N];
+unordered_map<long long,long long> w1;
+unordered_map<int,int> w;
+
+void get(int maxn) {
+    phi[1]=mu[1]=1;
+    for(int i=2;i<=maxn;i++) {
+        if(!vis[i]) {
+            prim[++cnt]=i;
+            mu[i]=-1;phi[i]=i-1;
+        }
+        for(int j=1;j<=cnt&&prim[j]*i<=maxn;j++) {
+            vis[i*prim[j]]=1;
+            if(i%prim[j]==0) {
+                phi[i*prim[j]]=phi[i]*prim[j];
+                break;
+            }
+            else mu[i*prim[j]]=-mu[i],phi[i*prim[j]]=phi[i]*(prim[j]-1);
+        }
+    }
+    for(int i=1;i<=maxn;i++)
+        sum1[i]=sum1[i-1]+mu[i],sum2[i]=sum2[i-1]+phi[i];
+}
+int djsmu(long long x) {
+    if(x<=6000000) return sum1[x];
+    if(w[x]) return w[x];
+    int ans=1;
+    for(int l=2,r;l>=0&&l<=x;l=r+1) {
+        r=x/(x/l);
+        ans-=(r-l+1)*djsmu(x/l);
+    }
+    return w[x]=ans;
+}
+
+long long djsphi(long long x) {
+    if(x<=6000000)return sum2[x];
+    if(w1[x])return w1[x];
+    long long ans=x*(x+1)/2;
+    for(long long l=2,r;l<=x;l=r+1) {
+        r=x/(x/l);
+        ans-=(r-l+1)*djsphi(x/l);
+    }
+    return w1[x]=ans;
+}
+
+int main() {
+    int t;
+    long long n;
+    scanf("%d", &t);
+    get(6000000); // 可根据题目调整预处理范围
+    while(t--) {
+        scanf("%lld", &n);
+        printf("%lld %d\n", djsphi(n), djsmu(n));
+    }
+    return 0;
+}
+```
+
 
 
 ## 计算几何
@@ -695,6 +762,9 @@ struct Point { // 表示点
 	Point(){}
 	Point(double _x,double _y) {
 		x = _x; y = _y;
+	}
+  void input() {
+		scanf("%lf %lf", &x, &y);
 	}
 	Point operator + (const Point& b) const {
 		return Point(x + b.x,y + b.y);
@@ -736,7 +806,10 @@ struct Line { // 表示线段
 	Line(Point _s,Point _e) {
 		s = _s;e = _e;
 	}
-	
+	void input() {
+		s.input();
+		e.input();
+	}
 	// 判断直线相交的，无需要可以不用（如果相交返回交点的版本，下面有一个只做判断的版本）
 	// 返回pair second为0重合 为1平行 为2相交且first为交点
 	pair <int, Point> operator &(const Line &b)const { 
@@ -1615,6 +1688,37 @@ Point orthocenter(Point A, Point B, Point C) {
 }
 ```
 
+### 自适应辛普森积分
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const double eps = 1e-12;
+double a, b;
+
+double f(double x) { // 需要求的函数
+	return sin(x) / x;
+}
+
+double simpson(double l, double r) {
+	return (r - l) * (f(l) + 4 * f((l+r)/2) + f(r)) / 6;
+}
+
+double solve(double l, double r) {
+	double s = simpson(l, r);
+	double mid = (l + r) / 2;
+	double left = simpson(l, mid), right = simpson(mid, r);
+	if(fabs(left + right - s) < eps) return left + right;
+	return solve(l, mid) + solve(mid, r);
+}
+
+int main() {
+	scanf("%lf %lf", &a, &b);
+	printf("%lf\n", solve(a, b));
+}
+```
+
 
 
 ### kuangbin二维
@@ -2207,7 +2311,7 @@ struct polygon{
 			Point a = aa, b = bb;
 			int d = sgn((a-p)^(b-p));
 			if(d == 0){
-				return sgn(a.distance(p)-b.distance(p)) < 0;
+				return sgn(dist(a,p) - dist(b,p)) < 0;
 			}
 			return d > 0;
 		}
