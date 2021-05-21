@@ -3304,3 +3304,11 @@ inline void write(int x){
 }
 ```
 
+### Linux环境获得文件夹权限
+
+```
+sudo su
+cd /var 
+chmod -R 777 jetbrains/
+```
+
